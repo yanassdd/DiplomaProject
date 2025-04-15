@@ -44,15 +44,19 @@ def send_help_message(message):
 # Старт бота
 @bot.message_handler(commands=['start'])
 def start(message):
+    #start
     send_help_message(message)
 
 # Додавання нової звички
 @bot.message_handler(commands=['add_habit'])
 def add_habit(message):
-    msg = bot.reply_to(message, "Напишіть назву вашої звички (наприклад, 'Читання книги').")
+    msg = bot.reply_to(message, 
+                       "Напишіть назву вашої звички (наприклад, 'Читання книги').")
     bot.register_next_step_handler(msg, process_habit)
 
+
 def process_habit(message):
+    #description
     user_id = message.from_user.id
     habit_name = message.text.strip()
     now = datetime.date.today()
@@ -71,7 +75,8 @@ def process_habit(message):
 def show_habits(message):
     user_id = message.from_user.id
     if user_id not in user_habits or not user_habits[user_id]:
-        bot.reply_to(message, "У вас ще немає звичок. Додайте їх за допомогою /add_habit.")
+        bot.reply_to(message, 
+                     "У вас ще немає звичок. Додайте їх за допомогою /add_habit.")
         return
 
     habits_text = "Ваші звички:\n"
@@ -86,10 +91,12 @@ def show_habits(message):
 def mark_done(message):
     user_id = message.from_user.id
     if user_id not in user_habits or not user_habits[user_id]:
-        bot.reply_to(message, "У вас немає звичок для відмітки. Додайте їх за допомогою /add_habit.")
+        bot.reply_to(message, 
+                     "У вас немає звичок для відмітки. Додайте їх за допомогою /add_habit.")
         return
 
-    msg = bot.reply_to(message, "Введіть номер звички, яку ви хочете відзначити як виконану.")
+    msg = bot.reply_to(message, 
+                       "Введіть номер звички, яку ви хочете відзначити як виконану.")
     bot.register_next_step_handler(msg, process_mark_done)
 
 def process_mark_done(message):
@@ -108,7 +115,8 @@ def process_mark_done(message):
         else:
             raise ValueError
     except ValueError:
-        bot.reply_to(message, "Невірний номер звички. Ось ваші звички:\n")
+        bot.reply_to(message, 
+                     "Невірний номер звички. Ось ваші звички:\n")
         show_habits(message)
         msg = bot.reply_to(message, "Спробуйте ще раз:")
         bot.register_next_step_handler(msg, process_mark_done)
@@ -118,7 +126,8 @@ def process_mark_done(message):
 def delete_habit(message):
     user_id = message.from_user.id
     if user_id not in user_habits or not user_habits[user_id]:
-        bot.reply_to(message, "У вас немає звичок для видалення. Додайте їх за допомогою /add_habit.")
+        bot.reply_to(message, 
+                     "У вас немає звичок для видалення. Додайте їх за допомогою /add_habit.")
         return
 
     msg = bot.reply_to(message, "Введіть номер звички, яку ви хочете видалити.")
@@ -149,7 +158,8 @@ def process_delete(message):
 def remind_me_of_habits(message):
     user_id = message.from_user.id
     if user_id not in user_habits or not user_habits[user_id]:
-        bot.reply_to(message, "У вас немає звичок для нагадування. Додайте їх за допомогою /add_habit.")
+        bot.reply_to(message, 
+                     "У вас немає звичок для нагадування. Додайте їх за допомогою /add_habit.")
         return
 
     habits_text = "Виберіть звичку для нагадування:\n"
@@ -165,7 +175,8 @@ def process_reminder(message):
         habit_number = int(message.text.strip())
         if 0 < habit_number <= len(user_habits[user_id]):
             habit_name = user_habits[user_id][habit_number - 1]['habit']
-            msg = bot.reply_to(message, "Вкажіть час нагадування у форматі HH:MM (наприклад, 14:30):")
+            msg = bot.reply_to(message, 
+                               "Вкажіть час нагадування у форматі HH:MM (наприклад, 14:30):")
             bot.register_next_step_handler(msg, process_set_reminder, habit_name)
         else:
             raise ValueError
@@ -180,9 +191,11 @@ def process_set_reminder(message, habit_name):
         if user_id not in reminder_schedules:
             reminder_schedules[user_id] = {}
         reminder_schedules[user_id][habit_name] = reminder_time
-        bot.reply_to(message, f"Нагадування для звички '{habit_name}' встановлено на {reminder_time}.")
+        bot.reply_to(message, 
+                     f"Нагадування для звички '{habit_name}' встановлено на {reminder_time}.")
     except ValueError:
-        bot.reply_to(message, "Невірний формат часу. Спробуйте ще раз у форматі HH:MM.")
+        bot.reply_to(message, 
+                     "Невірний формат часу. Спробуйте ще раз у форматі HH:MM.")
 
 # Видалення нагадування
 @bot.message_handler(commands=['delete_reminder'])
