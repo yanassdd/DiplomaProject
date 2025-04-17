@@ -12,6 +12,17 @@ from logging.handlers import RotatingFileHandler
 # Рівень логування з оточення
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
+logging.basicConfig(
+    level=log_level,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("habit_tracker.log"),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
 # Ротація логів
 log_file = RotatingFileHandler("C:\\Users\\Asus\\Desktop\\SumDU\\Diploma\\DiplomaProject\\logs\\bot.log"
 , maxBytes=1_000_000, backupCount=3)
