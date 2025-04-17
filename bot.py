@@ -69,6 +69,8 @@ def send_help_message(message):
 def start(message):
     #start
     send_help_message(message)
+    logger.info(f"Користувач {message.from_user.id} почав роботу з ботом")
+
 
 # Додавання нової звички
 @bot.message_handler(commands=['add_habit'])
@@ -89,6 +91,8 @@ def add_habit(message):
     msg = bot.reply_to(message, 
                        "Напишіть назву вашої звички (наприклад, 'Читання книги').")
     bot.register_next_step_handler(msg, process_habit)
+    logger.info(f"Користувач {user_id} додав звичку '{habit_name}'")
+
 
 
 def process_habit(message):
@@ -168,6 +172,8 @@ def process_mark_done(message):
             habit = user_habits[user_id][habit_number - 1]
             if not habit['completed']:
                 habit['completed'] = True
+                logger.info(f"Звичка '{habit_name}' відзначена як виконана користувачем {user_id}")
+
                 habit_name = habit['habit']
                 habit_stats[user_id][habit_name]['completed_days'] += 1
                 bot.reply_to(message, f"Звичка '{habit_name}' відзначена як виконана!")
@@ -181,6 +187,8 @@ def process_mark_done(message):
         show_habits(message)
         msg = bot.reply_to(message, "Спробуйте ще раз:")
         bot.register_next_step_handler(msg, process_mark_done)
+        logger.error(f"Користувач {user_id} ввів некоректний номер звички: '{message.text.strip()}'")
+
 
 # Видалення звички
 @bot.message_handler(commands=['delete'])
@@ -200,6 +208,7 @@ def process_delete(message):
         habit_number = int(message.text.strip())
         if 0 < habit_number <= len(user_habits[user_id]):
             habit = user_habits[user_id].pop(habit_number - 1)
+            logger.warning(f"Користувач {user_id} видалив звичку '{habit_name}'")
             habit_name = habit['habit']
             deleted_habits[user_id] = deleted_habits.get(user_id, [])
             deleted_habits[user_id].append(habit)
@@ -254,6 +263,7 @@ def process_set_reminder(message, habit_name):
         reminder_schedules[user_id][habit_name] = reminder_time
         bot.reply_to(message, 
                      f"Нагадування для звички '{habit_name}' встановлено на {reminder_time}.")
+        logger.info(f"Користувач {user_id} встановив нагадування для '{habit_name}' на {reminder_time}")
     except ValueError:
         bot.reply_to(message, 
                      "Невірний формат часу. Спробуйте ще раз у форматі HH:MM.")
@@ -272,6 +282,8 @@ def delete_reminder(message):
 
     msg = bot.reply_to(message, habits_text)
     bot.register_next_step_handler(msg, process_delete_reminder)
+    logger.info(f"Користувач {user_id} видалив нагадування для '{habit_name}'")
+
 
 def process_delete_reminder(message):
     user_id = message.from_user.id
@@ -333,6 +345,8 @@ def check_reminders():
                 if now.time().hour == reminder_time.hour and now.time().minute == reminder_time.minute:
                     bot.send_message(user_id, f"Нагадування: пора виконати звичку '{habit_name}'!")
         time.sleep(60)
+        logger.debug(f"Надіслано нагадування користувачу {user_id} про звичку '{habit_name}'")
+
 
 # Запуск фонового потоку
 reminder_thread = threading.Thread(target=check_reminders, daemon=True)
@@ -340,4 +354,5 @@ reminder_thread.start()
 
 # Запуск бота
 print("Бот запущено!")
+logger.info("Бот запущено та слухає оновлення")
 bot.polling(none_stop=True)
