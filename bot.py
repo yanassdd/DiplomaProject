@@ -8,6 +8,29 @@ from dotenv import load_dotenv
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+import uuid
+import traceback
+
+def main() -> None:
+    try:
+        logger.info("Bot is starting...")
+        application = Application.builder().token(TOKEN).build()
+
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CommandHandler("situation", situation))
+        application.add_handler(CommandHandler("resources", resources))
+        application.add_handler(CommandHandler("communicate", communicate))
+        application.add_handler(CommandHandler("safety", safety))
+        application.add_handler(CommandHandler("other", other))
+
+        application.run_polling()
+        logger.info("Bot is running.")
+
+    except Exception as e:
+        error_id = uuid.uuid4()
+        logger.critical(f"[{error_id}] Critical error occurred!\n{traceback.format_exc()}")
+        print(f"Помилка з кодом {error_id}. Зверніться до підтримки.")
+
 
 # Рівень логування з оточення
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
