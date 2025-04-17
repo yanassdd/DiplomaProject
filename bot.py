@@ -37,7 +37,7 @@ log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(
     level=log_level,
-    format="%(asctime)s [%(levelname)s] %(message)s",
+        format="%(asctime)s [%(levelname)s] [%(user_id)s] %(message)s",  # додано user_id в формат
     handlers=[
         logging.FileHandler("habit_tracker.log"),
         logging.StreamHandler()
@@ -47,8 +47,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Ротація логів
-log_file = RotatingFileHandler("C:\\Users\\Asus\\Desktop\\SumDU\\Diploma\\DiplomaProject\\logs\\bot.log"
-, maxBytes=1_000_000, backupCount=3)
+log_file = RotatingFileHandler(
+     "C:\\Users\\Asus\\Desktop\\SumDU\\Diploma\\DiplomaProject\\logs\\bot.log", maxBytes=1_000_000, backupCount=3)
 log_file.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s"))
 
 logging.basicConfig(
@@ -60,8 +60,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-
 
 # Завантаження змінних оточення
 load_dotenv()
@@ -97,13 +95,19 @@ def send_help_message(message):
         "/help - Показати цю довідку"
     )
     bot.reply_to(message, help_text)
+    
+
+# Функція для логування контексту
+def log_user_action(user_id, message, level="INFO"):
+    logger.log(getattr(logging, level), message, extra={"user_id": user_id})
 
 # Старт бота
 @bot.message_handler(commands=['start'])
 def start(message):
     #start
+    user_id = message.from_user.id
     send_help_message(message)
-    logger.info(f"Користувач {message.from_user.id} почав роботу з ботом")
+    log_user_action(user_id, f"Початок роботи з ботом")
 
 
 # Додавання нової звички
@@ -122,6 +126,7 @@ def add_habit(message):
     - Запитує назву звички у користувача.
     - Відповідає користувачу, що звичка була успішно додана.
     """
+    user_id = message.from_user.id
     msg = bot.reply_to(message, 
                        "Напишіть назву вашої звички (наприклад, 'Читання книги').")
     bot.register_next_step_handler(msg, process_habit)
@@ -143,6 +148,7 @@ def process_habit(message):
     habit_stats[user_id][habit_name] = {'completed_days': 0, 'missed_days': 0}
     bot.reply_to(message, f"Звичка '{habit_name}' додана!")
     show_habits(message)
+    log_user_action(user_id, f"Звичка '{habit_name}' додана")
 
 # Показати звички
 @bot.message_handler(commands=['my_habits'])
@@ -210,6 +216,7 @@ def process_mark_done(message):
 
                 habit_name = habit['habit']
                 habit_stats[user_id][habit_name]['completed_days'] += 1
+                log_user_action(user_id, f"Звичка '{habit_name}' відзначена як виконана")
                 bot.reply_to(message, f"Звичка '{habit_name}' відзначена як виконана!")
             else:
                 bot.reply_to(message, "Ця звичка вже відзначена як виконана.")
@@ -242,7 +249,7 @@ def process_delete(message):
         habit_number = int(message.text.strip())
         if 0 < habit_number <= len(user_habits[user_id]):
             habit = user_habits[user_id].pop(habit_number - 1)
-            logger.warning(f"Користувач {user_id} видалив звичку '{habit_name}'")
+            log_user_action(user_id, f"Видалено звичку '{habit_name}'")
             habit_name = habit['habit']
             deleted_habits[user_id] = deleted_habits.get(user_id, [])
             deleted_habits[user_id].append(habit)
