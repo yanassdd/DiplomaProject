@@ -5,6 +5,29 @@ import threading
 import time
 import os
 from dotenv import load_dotenv
+import os
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Рівень логування з оточення
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Ротація логів
+log_file = RotatingFileHandler("C:\\Users\\Asus\\Desktop\\SumDU\\Diploma\\DiplomaProject\\logs\\bot.log"
+, maxBytes=1_000_000, backupCount=3)
+log_file.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s"))
+
+logging.basicConfig(
+    level=getattr(logging, log_level, logging.INFO),
+    handlers=[
+        log_file,
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+
 
 # Завантаження змінних оточення
 load_dotenv()
